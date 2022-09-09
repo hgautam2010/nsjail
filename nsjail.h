@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
+#include <chrono>
 
 #include <map>
 #include <string>
@@ -49,6 +50,7 @@ static const int nssigs[] = {
 };
 
 struct pids_t {
+	std::chrono::milliseconds startAt;
 	time_t start;
 	std::string remote_txt;
 	struct sockaddr_in6 remote_addr;

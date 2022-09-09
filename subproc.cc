@@ -228,6 +228,7 @@ static void newProc(nsjconf_t* nsjconf, int netfd, int fd_in, int fd_out, int fd
 static void addProc(nsjconf_t* nsjconf, pid_t pid, int sock) {
 	pids_t p;
 
+	p.startAt = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 	p.start = time(NULL);
 	p.remote_txt = net::connToText(sock, /* remote= */ true, &p.remote_addr);
 
@@ -346,8 +347,10 @@ static int reapProc(nsjconf_t* nsjconf, pid_t pid, bool should_wait = false) {
 		}
 
 		if (WIFEXITED(status)) {
-			LOG_I("pid=%d (%s) exited with status: %d, (PIDs left: %d)", pid,
-			    remote_txt.c_str(), WEXITSTATUS(status), countProc(nsjconf) - 1);
+			const long long n = (long long)(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+			const long long t = (long long)(p->second.startAt.count());
+			LOG_I("pid=%d (%s) exited with status: %d, (PIDs left: %d), started at %lld, end at %lld, diff = %lld", pid,
+			    remote_txt.c_str(), WEXITSTATUS(status), countProc(nsjconf) - 1, (long long)(p->second.startAt.count()), n, n - t);
 			removeProc(nsjconf, pid);
 			return WEXITSTATUS(status);
 		}
